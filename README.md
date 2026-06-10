@@ -291,91 +291,25 @@ CONFIGURATION:
 ```
 
 
-# Running Fortive IP Finder
-The most basic running command. It checks A and TXT records by default.
+## How to Run
 
-```
-# cat domains.txt | Fortive-IP
-```
+### Web Dashboard (Interactive Mode)
+To start the web dashboard server:
 
-or you can pass "f" parameter to it.
-```
-# Fortive-IP -f domains.txt
+```powershell
+.\Fortive-IP.exe -serve
 ```
 
-
-Use the **zoomeye** parameter to include ZoomEye in the scan
-```
-# cat domain.txt | Fortive-IP -zoomeye
-```
-
-Use the **censys** parameter to include Shodan in the scan
-```
-# cat domain.txt | Fortive-IP -censys
-```
-
-Use the **shodan** parameter to include Shodan in the scan
-```
-# cat domain.txt | Fortive-IP -shodan
-```
-
-Use the **securitytrails** parameter to include Shodan in the scan
-```
-# cat domain.txt | Fortive-IP -securitytrails
-```
-
-Use the -td and -dl parameters to attempt to find the target domain's IP address by utilizing a list of domains or subdomains that are not behind Cloudflare. By specifying the IP addresses in the blocks where you have identified live IP addresses used by the target's cloud or on-premises infrastructure with the -dl parameter, you can find the real IP address of the target domain
-```
-# Fortive-IP -td https://musana.net -dl sub_domainlist.txt
-```
-
-to get domains behind of CF
-
-```
-# Fortive-IP -f domains.txt -cf
-```
-
-to get domains not behind of CF
-
-```
-# Fortive-IP -f domains.txt -non-cf
-```
-
-other options (custom ja3, proxy, worker, user agent)
-
-```
-# Fortive-IP -d https://musana.net -ua "Mozilla" -w 32 -ja3 "771,22..." -px "http://127.0.0.1:8080"
-```
-
-create fortive-ip-finder.yaml file under $HOME/.config/ directory to set the APIs key
-```
-# touch ~/.config/fortive-ip-finder.yaml
-
-// content of YAML file should be like;
-
-zoomeye:
-  - "api_key_here"
-securitytrails:
-  - "api_key_here"
-shodan:
-  - "api_key_here"
-censys:
-  - "api_key_here"
+Once started, open your web browser and navigate to:
+👉 http://localhost:8080
 
 ```
 
-## SS
+## Sacreenshot
 
-- Smart coloring: Yellow highlights indicate non-Cloudflare IPs, which will only be subject to checks.   
-- The title parameter can be set if the first request is blocked by Cloudflare.(The title would be 'Just a moment...') If the title parameter is not set, the HTML title is automatically retrieved.
-  
-<p align="left">
-  <img src="img/3.png">
-</p>
+<img width="1573" height="834" alt="image" src="https://github.com/user-attachments/assets/5cd69b56-21fd-4f8b-a670-4b8dc8667aad" />
 
-<p align="left">
-  <img src="img/4.png">
-</p>
+
 
 ## 🏆 Sponsorship  
 This project is proudly supported by Mo Qasim
