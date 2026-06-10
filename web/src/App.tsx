@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Search, Settings, Server, Shield, Activity, Save, Play, RefreshCw, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, Settings, Server, Shield, Activity, Save, Play, RefreshCw, CheckCircle, Terminal } from 'lucide-react';
 import './index.css';
 
 interface ScanResult {
@@ -25,6 +25,16 @@ function App() {
   const [isScanning, setIsScanning] = useState(false);
   const [status, setStatus] = useState('');
   const [results, setResults] = useState<ScanResult[]>([]);
+  const [logs, setLogs] = useState<string[]>([]);
+  
+  const consoleRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll logs terminal
+  useEffect(() => {
+    if (consoleRef.current) {
+      consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+    }
+  }, [logs]);
   
   // Config State
   const [apiKeys, setApiKeys] = useState<{ [key: string]: string[] }>({
@@ -69,6 +79,7 @@ function App() {
     if (!domains.trim()) return;
     setIsScanning(true);
     setResults([]);
+    setLogs([]);
     setStatus('Initializing scan...');
     
     const domainList = domains
@@ -129,6 +140,8 @@ function App() {
           } else if (eventType === 'result') {
             const res = JSON.parse(eventData);
             setResults(prev => [...prev, res]);
+          } else if (eventType === 'log') {
+            setLogs(prev => [...prev, eventData]);
           } else if (eventType === 'done') {
             setIsScanning(false);
             setStatus('Scan Complete');
@@ -237,44 +250,78 @@ function App() {
               </button>
             </div>
 
-            {/* Right Column: Results */}
-            <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  Live Results
-                  {status && <span className="badge badge-info">{status}</span>}
-                </h2>
-                <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-                  Found: <strong style={{ color: 'white' }}>{results.length}</strong>
-                </div>
-              </div>
-              
-              <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', borderRadius: '12px', border: '1px solid var(--glass-border)', overflowX: 'auto', display: 'flex', flexDirection: 'column' }}>
-                {/* Table Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 3.5fr 3fr', minWidth: '900px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--glass-border)', fontWeight: 600, fontSize: '14px' }}>
-                  <div>Target</div>
-                  <div>Origin IP</div>
-                  <div>Source</div>
-                  <div>Match Title</div>
+            {/* Right Column: Results & Console */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', flex: 1 }}>
+              {/* Live Results Card */}
+              <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', minHeight: '350px', flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    Live Results
+                    {status && <span className="badge badge-info">{status}</span>}
+                  </h2>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+                    Found: <strong style={{ color: 'white' }}>{results.length}</strong>
+                  </div>
                 </div>
                 
-                {/* Table Body */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-                  {results.length === 0 ? (
-                    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                      {isScanning ? 'Awaiting discoveries...' : 'No results yet. Start a scan to find origin IPs.'}
-                    </div>
+                <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', borderRadius: '12px', border: '1px solid var(--glass-border)', overflowX: 'auto', display: 'flex', flexDirection: 'column' }}>
+                  {/* Table Header */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 3.5fr 3fr', minWidth: '900px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--glass-border)', fontWeight: 600, fontSize: '14px' }}>
+                    <div>Target</div>
+                    <div>Origin IP</div>
+                    <div>Source</div>
+                    <div>Match Title</div>
+                  </div>
+                  
+                  {/* Table Body */}
+                  <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                    {results.length === 0 ? (
+                      <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                        {isScanning ? 'Awaiting discoveries...' : 'No results yet. Start a scan to find origin IPs.'}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {results.map((res, idx) => (
+                          <div key={idx} className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 3.5fr 3fr', minWidth: '900px', padding: '12px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', fontSize: '14px', alignItems: 'center' }}>
+                            <div style={{ color: 'var(--primary)', fontFamily: 'monospace' }}>{res.url}</div>
+                            <div style={{ fontFamily: 'monospace', color: '#10b981', fontWeight: 600 }}>{res.ip}</div>
+                            <div><span className="badge badge-warning">{res.source}</span></div>
+                            <div style={{ opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{res.title}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Console Output Card */}
+              <div className="glass-panel" style={{ height: '280px', display: 'flex', flexDirection: 'column', background: 'rgba(0, 0, 0, 0.4)', borderColor: 'rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px', color: '#60a5fa' }}>
+                    <Terminal size={18} />
+                    Live Process Output
+                    {isScanning && <span className="badge badge-success" style={{ fontSize: '10px', padding: '2px 8px', textTransform: 'lowercase' }}>running</span>}
+                  </h3>
+                  <button 
+                    onClick={() => setLogs([])}
+                    style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '11px', padding: '4px 10px', borderRadius: '4px', transition: 'all 0.2s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                  >
+                    Clear Console
+                  </button>
+                </div>
+                <div 
+                  ref={consoleRef}
+                  style={{ flex: 1, overflowY: 'auto', fontFamily: 'monospace', fontSize: '12px', padding: '12px', background: 'rgba(0, 0, 0, 0.6)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#34d399', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}
+                >
+                  {logs.length === 0 ? (
+                    <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Console idle. Start a scan to view real-time process execution details.</div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {results.map((res, idx) => (
-                        <div key={idx} className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 3.5fr 3fr', minWidth: '900px', padding: '12px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', fontSize: '14px', alignItems: 'center' }}>
-                          <div style={{ color: 'var(--primary)', fontFamily: 'monospace' }}>{res.url}</div>
-                          <div style={{ fontFamily: 'monospace', color: '#10b981', fontWeight: 600 }}>{res.ip}</div>
-                          <div><span className="badge badge-warning">{res.source}</span></div>
-                          <div style={{ opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{res.title}</div>
-                        </div>
-                      ))}
-                    </div>
+                    logs.map((log, idx) => (
+                      <div key={idx} style={{ padding: '1px 0', borderBottom: '1px solid rgba(255,255,255,0.01)' }}>{log}</div>
+                    ))
                   )}
                 </div>
               </div>

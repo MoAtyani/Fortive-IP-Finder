@@ -3,14 +3,19 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"sync"
 
+	"github.com/fatih/color"
 	"github.com/gammazero/workerpool"
 	"github.com/musana/fortive-ip-finder/internal/scanner"
+	"github.com/musana/fortive-ip-finder/internal/utils"
 	"github.com/musana/fortive-ip-finder/pkg/models"
 	"gopkg.in/yaml.v2"
 )
@@ -24,6 +29,38 @@ func init() {
 type Server struct {
 	Options *models.Options
 	DistFS  http.FileSystem
+	scanMu  sync.Mutex
+}
+
+type LogStreamer struct {
+	original io.Writer
+	onLine   func(string)
+	buffer   string
+	mu       sync.Mutex
+}
+
+func (ls *LogStreamer) Write(p []byte) (n int, err error) {
+	n, err = ls.original.Write(p)
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
+	ls.buffer += string(p)
+	for {
+		idx := strings.Index(ls.buffer, "\n")
+		if idx == -1 {
+			break
+		}
+		line := ls.buffer[:idx]
+		ls.buffer = ls.buffer[idx+1:]
+		cleanLine := stripANSI(line)
+		ls.onLine(cleanLine)
+	}
+	return
+}
+
+var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`)
+
+func stripANSI(str string) string {
+	return ansiRegex.ReplaceAllString(str, "")
 }
 
 type ScanRequest struct {
@@ -73,6 +110,9 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.scanMu.Lock()
+	defer s.scanMu.Unlock()
+
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
@@ -103,6 +143,22 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "event: %s\ndata: %s\n\n", eventType, data)
 		flusher.Flush()
 	}
+
+	// Intercept scanner output and stream it
+	originalOutput := color.Output
+	streamer := &LogStreamer{
+		original: originalOutput,
+		onLine: func(line string) {
+			sendEvent("log", line)
+		},
+	}
+	color.Output = streamer
+	defer func() {
+		color.Output = originalOutput
+	}()
+
+	// Stream initial banner
+	sendEvent("log", utils.Banner())
 
 	// Create custom options for this scan
 	scanOpts := *s.Options
