@@ -303,7 +303,7 @@ To start the web dashboard server:
 Once started, open your web browser and navigate to:
 👉 http://localhost:8080
 
-```
+
 
 ## Sacreenshot
 
