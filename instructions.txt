@@ -1,12 +1,86 @@
-powershell
+# Fortive IP Finder - Quick Start Instructions
 
-# Build the project using the helper script
+This guide explains how to build, configure, and run the Fortive IP Finder tool on Windows.
+
+---
+
+## 1. Prerequisites
+Before building, ensure you have the following installed on your system:
+* Go (version 1.18 or higher)
+* Node.js & npm (for building the web dashboard frontend)
+
+---
+
+## 2. Build the Project
+Open a PowerShell terminal in the project root directory and run the build helper script:
+
+```powershell
 .\build-windows.ps1
-# Start the dashboard
+```
+
+This script will:
+1. Navigate to the `web/` directory and install React/Vite dependencies.
+2. Build the production bundle of the dashboard frontend.
+3. Build the Go backend executable and output `Fortive-IP.exe` in the root folder.
+
+---
+
+## 3. Configuration (API Keys)
+To enable third-party intelligence sources (Censys, Shodan, ZoomEye, SecurityTrails), create a configuration file at the following path:
+`C:\Users\<YourUsername>\.config\fortive-ip-finder.yaml`
+
+Example content:
+```yaml
+zoomeye:
+  - "YOUR_ZOOMEYE_API_KEY"
+securitytrails:
+  - "YOUR_SECURITYTRAILS_API_KEY"
+shodan:
+  - "YOUR_SHODAN_API_KEY"
+censys:
+  - "YOUR_CENSYS_API_KEY"
+```
+
+---
+
+## 4. How to Run
+
+### Option A: Web Dashboard (Interactive Mode)
+To start the web dashboard server:
+
+```powershell
 .\Fortive-IP.exe -serve
+```
 
+Once started, open your web browser and navigate to:
+👉 http://localhost:8080
 
-then go to http://localhost:8080
+### Option B: Command Line Interface (CLI Mode)
+You can run scans directly from the command line using standard pipes or parameter arguments:
 
+* **Scan a single domain via pipeline (Censys query example):**
+  ```powershell
+  Write-Output "musana.net" | .\Fortive-IP.exe -censys
+  ```
 
-easy way through powershel : Write-Output "musana.net" | .\Fortive-IP.exe -censys
+* **Scan a list of domains from a file:**
+  ```powershell
+  .\Fortive-IP.exe -f domains.txt
+  ```
+
+* **Perform a target scan utilizing a list of non-Cloudflare subdomains:**
+  ```powershell
+  .\Fortive-IP.exe -td https://example.com -dl subdomains_list.txt
+  ```
+
+* **Filter results to show only Cloudflare-protected domains:**
+  ```powershell
+  .\Fortive-IP.exe -f domains.txt -cf
+  ```
+
+---
+
+For more detailed parameters and flags, run:
+```powershell
+.\Fortive-IP.exe -h
+```
