@@ -68,8 +68,15 @@ func ReadAPIKeys(source string) []string {
 	configPath := home + "/.config/fortive-ip-finder.yaml"
 	f, err := os.ReadFile(configPath)
 	if err != nil {
-		fmt.Printf("[!] Error reading config file %s: %v\n", configPath, err)
-		return nil
+		// Fallback to old cf-hero.yaml
+		fallbackPath := home + "/.config/cf-hero.yaml"
+		var fallbackErr error
+		f, fallbackErr = os.ReadFile(fallbackPath)
+		if fallbackErr != nil {
+			fmt.Printf("[!] Error reading config file %s: %v\n", configPath, err)
+			return nil
+		}
+		configPath = fallbackPath
 	}
 
 	var apiKeys map[string][]string

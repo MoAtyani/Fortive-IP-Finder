@@ -37,7 +37,7 @@ function App() {
 
   useEffect(() => {
     if (activeTab === 'settings') {
-      fetch('http://localhost:8080/api/config')
+      fetch('/api/config')
         .then(res => res.json())
         .then(data => {
           setApiKeys({
@@ -53,7 +53,7 @@ function App() {
 
   const handleSaveConfig = async () => {
     try {
-      await fetch('http://localhost:8080/api/config', {
+      await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiKeys)
@@ -89,7 +89,7 @@ function App() {
       });
     
     try {
-      const response = await fetch('http://localhost:8080/api/scan', {
+      const response = await fetch('/api/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

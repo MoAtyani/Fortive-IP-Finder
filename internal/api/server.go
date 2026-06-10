@@ -165,9 +165,15 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		f, err := os.ReadFile(configPath)
 		if err != nil {
-			// Return empty config
-			json.NewEncoder(w).Encode(map[string][]string{})
-			return
+			// Try fallback to cf-hero.yaml
+			fallbackPath := filepath.Join(configDir, "cf-hero.yaml")
+			var fallbackErr error
+			f, fallbackErr = os.ReadFile(fallbackPath)
+			if fallbackErr != nil {
+				// Return empty config
+				json.NewEncoder(w).Encode(map[string][]string{})
+				return
+			}
 		}
 
 		var apiKeys map[string][]string
