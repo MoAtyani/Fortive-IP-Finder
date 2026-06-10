@@ -1,0 +1,32 @@
+# Binaries
+*.exe
+*.exe.old
+*.bin
+*.dll
+*.so
+*.dylib
+
+# Build outputs
+dist/
+build/
+bin/
+
+# Dependency directories
+node_modules/
+vendor/
+
+# Configuration and logs
+*.log
+.env
+.env.*
+!.env.example
+*.yaml
+*.yml
+# Except we might want some yaml templates if any, but none exist.
+
+# IDE / System files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+.gemini/

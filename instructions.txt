@@ -1,0 +1,12 @@
+powershell
+
+# Build the project using the helper script
+.\build-windows.ps1
+# Start the dashboard
+.\Fortive-IP.exe -serve
+
+
+then go to http://localhost:8080
+
+
+easy way through powershel : Write-Output "musana.net" | .\Fortive-IP.exe -censys
