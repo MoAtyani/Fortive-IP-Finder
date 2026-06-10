@@ -9,6 +9,16 @@ interface ScanResult {
   title: string;
 }
 
+const getLogColor = (log: string) => {
+  const trimmed = log.trim();
+  if (trimmed.startsWith('[+]')) return '#34d399'; // Emerald Green
+  if (trimmed.startsWith('[!]')) return '#fbbf24'; // Amber Yellow
+  if (trimmed.startsWith('[-]')) return '#f87171'; // Coral Red
+  if (trimmed.startsWith('[*]')) return '#60a5fa'; // Cyan/Blue
+  if (trimmed.includes('______') || trimmed.includes('|  __') || trimmed.includes('|_|  \\')) return '#c084fc'; // Banner Purple
+  return '#cbd5e1'; // Slate Gray for normal details
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState<'scanner' | 'settings'>('scanner');
   
@@ -323,13 +333,13 @@ function App() {
                 </div>
                 <div 
                   ref={consoleRef}
-                  style={{ flex: 1, overflowY: 'auto', fontFamily: 'monospace', fontSize: '12px', padding: '12px', background: 'rgba(0, 0, 0, 0.6)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#34d399', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}
+                  style={{ flex: 1, overflowY: 'auto', fontFamily: 'monospace', fontSize: '12px', padding: '12px', background: 'rgba(0, 0, 0, 0.6)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#cbd5e1', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}
                 >
                   {logs.length === 0 ? (
                     <div style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Console idle. Start a scan to view real-time process execution details.</div>
                   ) : (
                     logs.map((log, idx) => (
-                      <div key={idx} style={{ padding: '1px 0', borderBottom: '1px solid rgba(255,255,255,0.01)' }}>{log}</div>
+                      <div key={idx} style={{ padding: '2px 0', borderBottom: '1px solid rgba(255,255,255,0.01)', color: getLogColor(log) }}>{log}</div>
                     ))
                   )}
                 </div>
