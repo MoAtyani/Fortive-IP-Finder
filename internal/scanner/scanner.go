@@ -210,6 +210,14 @@ func (s *Scanner) Start(url string) {
 	}
 	color.White("[*] Target Information: [ %s (%s) (%s) - Title: %s ]", domain, primaryIP, cfStatus, actualHTMLTitle)
 
+	if !isCloudflare && primaryIP != nil {
+		s.mu.Lock()
+		s.Stats.RealIPsFound++
+		s.Stats.TotalIPsScanned++
+		s.mu.Unlock()
+		s.printResult(url, primaryIP, primaryIP, "DNS A Record (Not Cloudflare)", actualHTMLTitle)
+	}
+
 	if len(nonCFIPs) > 0 && isCloudflare {
 		s.checkARecords(url, nonCFIPs, primaryIP, actualHTMLTitle)
 		s.mu.Lock()
