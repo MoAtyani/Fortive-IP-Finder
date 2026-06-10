@@ -109,6 +109,14 @@ function App() {
         })
       });
 
+      if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('A scan is already in progress. Please wait for it to finish.');
+        }
+        const errMsg = await response.text().catch(() => '');
+        throw new Error(errMsg || `Server error: ${response.status}`);
+      }
+
       if (!response.body) throw new Error('No readable stream');
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
@@ -150,7 +158,8 @@ function App() {
       }
     } catch (err) {
       console.error(err);
-      setStatus('Error occurred during scan.');
+      const msg = err instanceof Error ? err.message : 'Error occurred during scan.';
+      setStatus(msg);
       setIsScanning(false);
     }
   };

@@ -27,9 +27,10 @@ func init() {
 }
 
 type Server struct {
-	Options *models.Options
-	DistFS  http.FileSystem
-	scanMu  sync.Mutex
+	Options     *models.Options
+	DistFS      http.FileSystem
+	scanMu      sync.Mutex
+	scanRunning bool
 }
 
 type LogStreamer struct {
@@ -110,8 +111,25 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	s.scanMu.Lock()
-	defer s.scanMu.Unlock()
+	if s.scanRunning {
+		s.scanMu.Unlock()
+		http.Error(w, "Scan already in progress", http.StatusConflict)
+		return
+	}
+	s.scanRunning = true
+	s.scanMu.Unlock()
+
+	defer func() {
+		s.scanMu.Lock()
+		s.scanRunning = false
+		s.scanMu.Unlock()
+	}()
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -120,16 +138,6 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req ScanRequest
-	// For SSE, we might receive params in URL if using EventSource, 
-	// but let's assume we can also use fetch with POST and stream response.
-	// Actually, standard SSE via EventSource only supports GET.
-	// We'll use a custom fetch implementation on the frontend to support POST body with streaming text.
-	
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
@@ -139,9 +147,41 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
+	ctx := r.Context()
+
+	type sseEvent struct {
+		eventType string
+		data      string
+	}
+
+	eventsChan := make(chan sseEvent, 500)
+	doneChan := make(chan struct{})
+
+	// Single writer thread for SSE events
+	go func() {
+		defer close(doneChan)
+		for {
+			select {
+			case ev, ok := <-eventsChan:
+				if !ok {
+					return
+				}
+				fmt.Fprintf(w, "event: %s\ndata: %s\n\n", ev.eventType, ev.data)
+				flusher.Flush()
+			case <-ctx.Done():
+				// Client disconnected, drain to prevent blocking senders
+				for range eventsChan {
+				}
+				return
+			}
+		}
+	}()
+
 	sendEvent := func(eventType, data string) {
-		fmt.Fprintf(w, "event: %s\ndata: %s\n\n", eventType, data)
-		flusher.Flush()
+		select {
+		case eventsChan <- sseEvent{eventType: eventType, data: data}:
+		case <-ctx.Done():
+		}
 	}
 
 	// Intercept scanner output and stream it
@@ -155,10 +195,14 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 	color.Output = streamer
 	defer func() {
 		color.Output = originalOutput
+		close(eventsChan)
+		<-doneChan
 	}()
 
 	// Stream initial banner
-	sendEvent("log", utils.Banner())
+	if ctx.Err() == nil {
+		sendEvent("log", utils.Banner())
+	}
 
 	// Create custom options for this scan
 	scanOpts := *s.Options
@@ -187,27 +231,39 @@ func (s *Server) handleScan(w http.ResponseWriter, r *http.Request) {
 		sendEvent("result", string(b))
 	}
 
-	sendEvent("status", "Starting pre-scan...")
-	sc.PreScan()
-
-	sendEvent("status", "Starting scan...")
-	wp := workerpool.New(scanOpts.Worker)
-	
-	var wg sync.WaitGroup
-	for _, url := range req.Domains {
-		url := url
-		wg.Add(1)
-		wp.Submit(func() {
-			defer wg.Done()
-			sc.Start(url)
-		})
+	if ctx.Err() == nil {
+		sendEvent("status", "Starting pre-scan...")
+		sc.PreScan()
 	}
 
-	wg.Wait()
-	wp.StopWait()
+	if ctx.Err() == nil {
+		sendEvent("status", "Starting scan...")
+		wp := workerpool.New(scanOpts.Worker)
+		
+		var wg sync.WaitGroup
+		for _, url := range req.Domains {
+			if ctx.Err() != nil {
+				break
+			}
+			url := url
+			wg.Add(1)
+			wp.Submit(func() {
+				defer wg.Done()
+				if ctx.Err() != nil {
+					return
+				}
+				sc.Start(url)
+			})
+		}
 
-	sendEvent("status", "Scan complete")
-	sendEvent("done", "{}")
+		wg.Wait()
+		wp.StopWait()
+	}
+
+	if ctx.Err() == nil {
+		sendEvent("status", "Scan complete")
+		sendEvent("done", "{}")
+	}
 }
 
 func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
