@@ -314,9 +314,6 @@ Once started, open your web browser and navigate to:
 ## 🏆 Sponsorship  
 This project is proudly supported by Mo Qasim
 
-<p height="100" align="left">
-  <a href="#"><img height="100" src="https://www.zoomeye.ai/static/logo-CVnk4X2t.svg"></a>
-</p>
 
 ## To Do
 - favicon search
