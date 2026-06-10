@@ -184,12 +184,16 @@ textarea.input-field {
 
 /* Badges */
 .badge {
+  display: inline-block;
   padding: 4px 10px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  line-height: 1.4;
+  text-align: center;
+  word-break: break-word;
 }
 
 .badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }

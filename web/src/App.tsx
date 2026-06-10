@@ -251,7 +251,7 @@ function App() {
               
               <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', borderRadius: '12px', border: '1px solid var(--glass-border)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 {/* Table Header */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 2fr', padding: '16px', background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--glass-border)', fontWeight: 600, fontSize: '14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2.5fr 1.5fr 2fr 3fr', padding: '16px', background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--glass-border)', fontWeight: 600, fontSize: '14px' }}>
                   <div>Target</div>
                   <div>Origin IP</div>
                   <div>Source</div>
@@ -267,7 +267,7 @@ function App() {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {results.map((res, idx) => (
-                        <div key={idx} className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr 2fr', padding: '12px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', fontSize: '14px', alignItems: 'center' }}>
+                        <div key={idx} className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '2.5fr 1.5fr 2fr 3fr', padding: '12px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', fontSize: '14px', alignItems: 'center' }}>
                           <div style={{ color: 'var(--primary)', fontFamily: 'monospace' }}>{res.url}</div>
                           <div style={{ fontFamily: 'monospace', color: '#10b981', fontWeight: 600 }}>{res.ip}</div>
                           <div><span className="badge badge-warning">{res.source}</span></div>
