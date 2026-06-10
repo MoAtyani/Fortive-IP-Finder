@@ -22,7 +22,7 @@
   <a href="#installation-instructions">Installation</a> •
   <a href="#usage">Usage</a> •
   <a href="#running-fortive-ip">Running Fortive-IP</a> •
-  <a href="#-sponsorship">ZoomEye (Sponsor)</a> •
+  <a href="#-sponsorship">Mo Qasim (Sponsor)</a> •
   <a href="#to-do">To Do</a>
 </p>
 
@@ -239,7 +239,7 @@ It uses the security trails service for historical DNS records. You can perform 
 Fortive-IP requires **go1.18** to install successfully. Run the following command to install.
 
 ```
-go install -v github.com/musana/fortive-ip-finder/cmd/Fortive-IP@latest
+go install -v github.com/MoAtyani/Fortive-IP-Finder@latest
 ```
 
 # Usage
@@ -254,7 +254,7 @@ go install -v github.com/musana/fortive-ip-finder/cmd/Fortive-IP@latest
  | | | (_) | |   | |_| |\ V /  __/  _| |_| |     
  |_|  \___/|_|    \__|_| \_/ \___| |_____|_|     
 
-                                @musana
+                                @Qasim
 _____________________________________________
 
 Unmask the origin IPs of Cloudflare-protected domains
@@ -277,7 +277,6 @@ SOURCES:
    -censys          Include Censys in scanning
    -securitytrails  Include SecurityTrails historical DNS records in scanning
    -shodan          Include Shodan historical DNS records in scanning
-   -zoomeye         Include Zoomeye in scanning
    -dl string       Domain list for sub/domain scanning
    -td string       Target domain for sub/domain scanning
 
@@ -379,10 +378,10 @@ censys:
 </p>
 
 ## 🏆 Sponsorship  
-This project is proudly supported by [ZoomEye](https://www.zoomeye.ai).  
+This project is proudly supported by Mo Qasim
 
 <p height="100" align="left">
-  <a href="https://www.zoomeye.ai"><img height="100" src="https://www.zoomeye.ai/static/logo-CVnk4X2t.svg"></a>
+  <a href="#"><img height="100" src="https://www.zoomeye.ai/static/logo-CVnk4X2t.svg"></a>
 </p>
 
 ## To Do
