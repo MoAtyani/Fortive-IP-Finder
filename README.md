@@ -307,7 +307,8 @@ Once started, open your web browser and navigate to:
 
 ## Sacreenshot
 
-<img width="1573" height="834" alt="image" src="https://github.com/user-attachments/assets/5cd69b56-21fd-4f8b-a670-4b8dc8667aad" />
+<img width="1502" height="848" alt="image" src="https://github.com/user-attachments/assets/a0f675d4-b8e3-40aa-b756-67c422f192cf" />
+
 
 
 
