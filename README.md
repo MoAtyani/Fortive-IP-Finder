@@ -157,14 +157,14 @@ The tool analyzes data from these sources to identify potential origin IP addres
 ## Current DNS Records
 Let's take look at some use-case with misconfigured DNS settings. 
 
-As you can see, a regular DNS query returns the IP address of the domain. For example, musana.net is behind Cloudflare (CF), but sometimes the domain has multiple A records, and some of them may not correspond to IP addresses associated with CF. (This DNS output is merely an illustrative example and may not represent the exact DNS answer for musana.net.)
+As you can see, a regular DNS query returns the IP address of the domain. For example, forcefortitude.com is behind Cloudflare (CF), but sometimes the domain has multiple A records, and some of them may not correspond to IP addresses associated with CF. (This DNS output is merely an illustrative example and may not represent the exact DNS answer for forcefortitude.com.)
 
 ```
 ;; ANSWER SECTION:
-musana.net.	300	IN	A	104.16.42.102
-musana.net.	300	IN	A	104.16.43.102
-musana.net.	300	IN	A	123.45.67.89 (Real IP exposed)
-musana.net.	300	IN	A	123.45.76.98 (Real IP exposed)
+forcefortitude.com.	300	IN	A	104.16.42.102
+forcefortitude.com.	300	IN	A	104.16.43.102
+forcefortitude.com.	300	IN	A	123.45.67.89 (Real IP exposed)
+forcefortitude.com.	300	IN	A	123.45.76.98 (Real IP exposed)
 ```
 
 The another case is related to TXT records. Sometimes domain is behind of CF but real IP of the domain may used in TXT records. Fortive-IP check all TXT records then extract all IP address finally it try to connect IP which it found via HTTP.
@@ -175,15 +175,15 @@ As you can see in the following DNS answer SPF record has some IP addresses. For
 
 ```
 ;; ANSWER SECTION:
-musana.net.	115	IN	TXT	"1password-site-verification=LROK6G5XFJG5NF76TE2FBTABUA"
-musana.net.	115	IN	TXT	"5fG-7tA-G4V"
-musana.net.	115	IN	TXT	"MS=ms16524910"
-musana.net.	115	IN	TXT	"OSSRH-74956"
-musana.net.	115	IN	TXT	"docker-verification=6910d334-a3fc-419c-89ac-57668af5bf0d"
-musana.net.	115	IN	TXT	"docusign=4c6d27bb-572e-4fd4-896c-81bfb0af0aa1"
-musana.net.	115	IN	TXT	"shopify-verification-code=1Ww5VsPpkIf32cJ5PdDHdguRk22K2R"
-musana.net.	115	IN	TXT	"shopify-verification-code=NM243t2faQbaJs8SRFMSEQAc4J9UQf"
-musana.net.	115	IN	TXT	"v=spf1 include:_spf.google.com include:cust-spf.exacttarget.com include:amazonses.com include:mail.zendesk.com include:servers.mcsv.net include:spf.mailjet.com ip4:216.74.162.13 ip4:216.74.162.14  ip4:153.95.95.86 ip4:18.197.36.5 -all"
+forcefortitude.com.	115	IN	TXT	"1password-site-verification=LROK6G5XFJG5NF76TE2FBTABUA"
+forcefortitude.com.	115	IN	TXT	"5fG-7tA-G4V"
+forcefortitude.com.	115	IN	TXT	"MS=ms16524910"
+forcefortitude.com.	115	IN	TXT	"OSSRH-74956"
+forcefortitude.com.	115	IN	TXT	"docker-verification=6910d334-a3fc-419c-89ac-57668af5bf0d"
+forcefortitude.com.	115	IN	TXT	"docusign=4c6d27bb-572e-4fd4-896c-81bfb0af0aa1"
+forcefortitude.com.	115	IN	TXT	"shopify-verification-code=1Ww5VsPpkIf32cJ5PdDHdguRk22K2R"
+forcefortitude.com.	115	IN	TXT	"shopify-verification-code=NM243t2faQbaJs8SRFMSEQAc4J9UQf"
+forcefortitude.com.	115	IN	TXT	"v=spf1 include:_spf.google.com include:cust-spf.exacttarget.com include:amazonses.com include:mail.zendesk.com include:servers.mcsv.net include:spf.mailjet.com ip4:216.74.162.13 ip4:216.74.162.14  ip4:153.95.95.86 ip4:18.197.36.5 -all"
 
 
 ```
@@ -206,15 +206,15 @@ Let's take look at closer
 
 ```
 
---> TCP --> blog.musana.net [123.45.67.89] ---> HTTPs -------------\
+--> TCP --> blog.forcefortitude.com [123.45.67.89] ---> HTTPs -------------\
                                                                     \
---> TCP --> api.musana.net [123.67.45.98] ----> HTTPs -----------\   \ 
+--> TCP --> api.forcefortitude.com [123.67.45.98] ----> HTTPs -----------\   \ 
                                                                   \   \
---> TCP --> test.musana.net [123.89.44.88] ---> HTTPs -------------\   \
+--> TCP --> test.forcefortitude.com [123.89.44.88] ---> HTTPs -------------\   \
                                                                     \___\____________________
---> TCP --> tools.musana.net [123.44.55.66] --> HTTPs -------------> | GET / HTTP/2          |
-                                                                     | Host: musana.net      | ====> Check & Compare Responses
---> TCP --> admin.musana.net [33.44.123.45] --> HTTPs -------------->|_______________________|
+--> TCP --> tools.forcefortitude.com [123.44.55.66] --> HTTPs -------------> | GET / HTTP/2          |
+                                                                     | Host: forcefortitude.com      | ====> Check & Compare Responses
+--> TCP --> admin.forcefortitude.com [33.44.123.45] --> HTTPs -------------->|_______________________|
                                                                           /    /
 --> TCP --> ... [...] ------------------------> HTTPs ------------------>/    /
                                                                         /    /
